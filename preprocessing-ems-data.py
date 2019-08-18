@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from PythonWork import export_to_csv
 
 from _datetime import datetime
@@ -78,9 +79,33 @@ def arrival_rate(date):
         count = 1
         return count
 
+# data['how_many_come_in'] = data["FIRST_HOSP_ARRIVAL_DATETIME"].apply(lambda x: arrival_rate(x))
+
 
 data = pd.read_csv('ems-data.csv')
 
-data['how_many_come_in'] = data["FIRST_HOSP_ARRIVAL_DATETIME"].apply(lambda x: arrival_rate(x))
+row_count = 0
 
-export_to_csv.export(data, "final_process")
+
+def bucket_creation(value):
+    global row_count
+    if row_count+1 == len(data.how_many_come_in):
+        return value
+    elif row_count is 0:
+        row_count += 1
+        return np.nan
+    elif value > data.how_many_come_in[row_count+1]:
+        row_count += 1
+        print(row_count/5990574)
+        return value
+    elif value < data.how_many_come_in[row_count+1]:
+        row_count += 1
+        return np.nan
+
+
+def return_none(x):
+    return np.nan
+
+
+data['arrival_per_30_mins'] = data['how_many_come_in'].apply(lambda x: bucket_creation(x))
+export_to_csv.export(data, "ems-data-preprocessed.csv")
