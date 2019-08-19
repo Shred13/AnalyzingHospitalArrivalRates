@@ -3,6 +3,7 @@ import numpy as np
 from PythonWork import export_to_csv
 
 from _datetime import datetime
+from matplotlib import pyplot as plt
 
 
 def isLeap(year):
@@ -18,6 +19,8 @@ def isLeap(year):
         return False
 
     # All of the following commented out code is to show all the preprocessing steps I went through
+
+
 # data = pd.read_csv('ems-incident-dispatch-data.csv')
 # # data is now a pandas dataframe
 #
@@ -44,9 +47,9 @@ def returnday(date):
 
 def return_percent_of_year(date):
     if isLeap(date.year):
-        return date.timetuple().tm_yday/366
+        return date.timetuple().tm_yday / 366
     else:
-        return date.timetuple().tm_yday/365
+        return date.timetuple().tm_yday / 365
 
 
 # data['weekday'] = data['FIRST_HOSP_ARRIVAL_DATETIME'].apply(lambda x: returnday(x))
@@ -79,33 +82,53 @@ def arrival_rate(date):
         count = 1
         return count
 
+
 # data['how_many_come_in'] = data["FIRST_HOSP_ARRIVAL_DATETIME"].apply(lambda x: arrival_rate(x))
 
 
-data = pd.read_csv('ems-data.csv')
+# data = pd.read_csv('ems-data.csv')
 
 row_count = 0
 
 
 def bucket_creation(value):
     global row_count
-    if row_count+1 == len(data.how_many_come_in):
+    if row_count + 1 == len(data.how_many_come_in):
         return value
     elif row_count is 0:
         row_count += 1
         return np.nan
-    elif value > data.how_many_come_in[row_count+1]:
+    elif value > data.how_many_come_in[row_count + 1]:
         row_count += 1
-        print(row_count/5990574)
+        print(row_count / 5990574)
         return value
-    elif value < data.how_many_come_in[row_count+1]:
+    elif value < data.how_many_come_in[row_count + 1]:
         row_count += 1
         return np.nan
 
 
-def return_none(x):
-    return np.nan
+# data['arrival_per_30_mins'] = data['how_many_come_in'].apply(lambda x: bucket_creation(x))
+
+# data.drop(columns='how_many_come_in', inplace=True)
+# data.dropna(subset=['arrival_per_30_mins'], inplace=True)
 
 
-data['arrival_per_30_mins'] = data['how_many_come_in'].apply(lambda x: bucket_creation(x))
-export_to_csv.export(data, "ems-data-preprocessed.csv")
+# data.FIRST_HOSP_ARRIVAL_DATETIME = pd.to_datetime(data.FIRST_HOSP_ARRIVAL_DATETIME, format='%Y-%m-%dT%H:%M:%S')
+
+# data.drop(columns="FIRST_HOSP_ARRIVAL_DATETIME", inplace=True)
+
+# data.drop(0, inplace=True)
+
+
+data = pd.read_csv("ems-data.csv")
+data.FIRST_HOSP_ARRIVAL_DATETIME = pd.to_datetime(data.FIRST_HOSP_ARRIVAL_DATETIME, format='%Y-%m-%dT%H:%M:%S')
+
+data['FIRST_HOSP_ARRIVAL_DATETIME'] = data['FIRST_HOSP_ARRIVAL_DATETIME'].dt.round('15min')
+
+export_to_csv.export(data, "ems-data-30-mins-datetime.csv")
+
+# string does not work because lack of year
+
+# data = pd.read_csv('ems-data-30-mins-datetime.csv')
+plt.plot(data['FIRST_HOSP_ARRIVAL_DATETIME'][:672], data['arrival_per_30_mins'][:672])
+plt.show()
