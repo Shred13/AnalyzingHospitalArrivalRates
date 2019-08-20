@@ -120,15 +120,24 @@ def bucket_creation(value):
 # data.drop(0, inplace=True)
 
 
-data = pd.read_csv("ems-data.csv")
-data.FIRST_HOSP_ARRIVAL_DATETIME = pd.to_datetime(data.FIRST_HOSP_ARRIVAL_DATETIME, format='%Y-%m-%dT%H:%M:%S')
+# data = pd.read_csv("ems-data.csv")
+# data.FIRST_HOSP_ARRIVAL_DATETIME = pd.to_datetime(data.FIRST_HOSP_ARRIVAL_DATETIME, format='%Y-%m-%dT%H:%M:%S')
 
-data['FIRST_HOSP_ARRIVAL_DATETIME'] = data['FIRST_HOSP_ARRIVAL_DATETIME'].dt.round('15min')
+# data['FIRST_HOSP_ARRIVAL_DATETIME'] = data['FIRST_HOSP_ARRIVAL_DATETIME'].dt.round('15min')
 
-export_to_csv.export(data, "ems-data-30-mins-datetime.csv")
+# export_to_csv.export(data, "ems-data-30-mins-datetime.csv")
 
+# todo see if percent of month makes a difference, see how gap in buckets makes a difference, finally if moving average or buckets is better
 # string does not work because lack of year
 
-# data = pd.read_csv('ems-data-30-mins-datetime.csv')
-plt.plot(data['FIRST_HOSP_ARRIVAL_DATETIME'][:672], data['arrival_per_30_mins'][:672])
-plt.show()
+data = pd.read_csv('ems-data-30-mins-datetime.csv')
+# plt.plot(data['FIRST_HOSP_ARRIVAL_DATETIME'][:1008], data['arrival_per_30_mins'][:1008])
+# plt.show()
+grouped_data = list(data.groupby("BOROUGH"))
+
+for pd_data in grouped_data:
+    print(pd_data)
+    string = pd_data[0] + " ems-data-30-mins.csv"
+    if "/" in string:
+        string = string.replace("/", "-")
+    export_to_csv.export(pd_data[1], string)
