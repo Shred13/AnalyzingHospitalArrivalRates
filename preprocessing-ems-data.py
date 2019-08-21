@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from PythonWork import export_to_csv
 
-from _datetime import datetime
+from _datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 
 
@@ -125,19 +125,38 @@ def bucket_creation(value):
 
 # data['FIRST_HOSP_ARRIVAL_DATETIME'] = data['FIRST_HOSP_ARRIVAL_DATETIME'].dt.round('15min')
 
-# export_to_csv.export(data, "ems-data-30-mins-datetime.csv")
+# export_to_csv.export(data, "ALL-ems-data-30-mins-datetime.csv")
 
 # todo see if percent of month makes a difference, see how gap in buckets makes a difference, finally if moving average or buckets is better
 # string does not work because lack of year
 
-data = pd.read_csv('ems-data-30-mins-datetime.csv')
 # plt.plot(data['FIRST_HOSP_ARRIVAL_DATETIME'][:1008], data['arrival_per_30_mins'][:1008])
 # plt.show()
-grouped_data = list(data.groupby("BOROUGH"))
+# grouped_data = list(data.groupby("BOROUGH"))
+#
+# data = pd.read_csv('ALL-ems-data-30-mins-datetime.csv')
+# grouped_data = list(data.groupby("BOROUGH"))
+# for pd_data in grouped_data:
+#     print(pd_data)
+#     string = pd_data[0] + "-ems-data-30-mins.csv"
+#     if "/" in string:
+#         string = string.replace("/", "-")
+#     pd_data[1].drop(columns="BOROUGH", inplace=True)
+#     export_to_csv.export(pd_data[1], string)
+#
 
-for pd_data in grouped_data:
-    print(pd_data)
-    string = pd_data[0] + " ems-data-30-mins.csv"
-    if "/" in string:
-        string = string.replace("/", "-")
-    export_to_csv.export(pd_data[1], string)
+def time_delta_from_beginning(date):
+    final_day = date - data['FIRST_HOSP_ARRIVAL_DATETIME'][0]
+    final_diff = final_day.total_seconds()
+    return final_diff
+
+
+# data = pd.read_csv('./draft_data/ALL-ems-data-30-mins-datetime.csv')
+# data.FIRST_HOSP_ARRIVAL_DATETIME = pd.to_datetime(data.FIRST_HOSP_ARRIVAL_DATETIME, format='%Y-%m-%dT%H:%M:%S')
+# data["time_since_start"] = data['FIRST_HOSP_ARRIVAL_DATETIME'].apply(lambda x: time_delta_from_beginning(x))
+# data.drop(columns=['FIRST_HOSP_ARRIVAL_DATETIME', 'BOROUGH'], inplace=True)
+#
+# export_to_csv.export(data, "./30-mins-data/ALL-ems-data-30-mins.csv")
+data = pd.read_csv('./30-mins-data/ALL-ems-data-30-mins.csv')
+plt.plot(data['time_since_start'][:1008], data['arrival_per_30_mins'][:1008])
+plt.show()
